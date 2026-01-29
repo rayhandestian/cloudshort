@@ -1,0 +1,13 @@
+name = "cloudshort-redirector"
+main = "src/index.ts"
+compatibility_date = "2024-04-01"
+
+# Bindings
+[[kv_namespaces]]
+binding = "LINKS_KV"
+id = "0c19a899425d4e2891dd7f3cce668c36" # User needs to replace this
+
+[[d1_databases]]
+binding = "DB"
+database_name = "cloudshort-db"
+database_id = "a32f78b0-3cbb-4eb0-9262-5ca8e871e269" # User needs to replace this

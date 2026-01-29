@@ -1,0 +1,31 @@
+{
+  "name": "cloudshort-monorepo",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev:redirector": "pnpm --filter cloudshort-redirector dev",
+    "dev:dashboard": "pnpm --filter cloudshort-dashboard dev",
+    "deploy:redirector": "pnpm --filter cloudshort-redirector run deploy",
+    "deploy:dashboard": "pnpm --filter cloudshort-dashboard build && pnpm --filter cloudshort-dashboard run deploy",
+    "project:deploy": "node scripts/deploy.js",
+    "project:setup": "node scripts/setup.js"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers",
+    "url-shortener",
+    "hono",
+    "react",
+    "d1",
+    "kv"
+  ],
+  "author": "Rayhan",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rayhan/cloudshort.git"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

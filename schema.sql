@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS links;
+CREATE TABLE links (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    slug TEXT NOT NULL UNIQUE,
+    long_url TEXT NOT NULL,
+    created_at INTEGER NOT NULL,
+    clicks INTEGER DEFAULT 0
+);
+CREATE INDEX idx_slug ON links(slug);
