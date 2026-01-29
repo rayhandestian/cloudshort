@@ -15,6 +15,8 @@ function App() {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
     const [currentView, setCurrentView] = useState<'dashboard' | 'settings'>('dashboard');
     const [links, setLinks] = useState<Link[]>([]);
+    const [sort, setSort] = useState<'created_at' | 'clicks'>('created_at');
+    const [order, setOrder] = useState<'asc' | 'desc'>('desc');
     const [newSlug, setNewSlug] = useState('');
     const [newUrl, setNewUrl] = useState('');
     const [loading, setLoading] = useState(false);
@@ -24,13 +26,20 @@ function App() {
         checkAuth();
     }, []);
 
+    // Re-fetch when sort/order changes (if authenticated)
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchLinks();
+        }
+    }, [sort, order]);
+
     const checkAuth = async () => {
         try {
             const res = await fetch('/api/auth/check', { credentials: 'include' });
             const data = await res.json();
             if (data.authenticated) {
                 setIsAuthenticated(true);
-                fetchLinks();
+                fetchLinks(); // Initial fetch
             } else {
                 console.log('Auth check failed:', data);
                 setIsAuthenticated(false);
@@ -42,7 +51,7 @@ function App() {
 
     const fetchLinks = async () => {
         try {
-            const res = await fetch('/api/links', { credentials: 'include' });
+            const res = await fetch(`/api/links?sort=${sort}&order=${order}`, { credentials: 'include' });
             if (res.ok) {
                 const data = await res.json();
                 setLinks(data);
@@ -228,7 +237,36 @@ function App() {
                             <div className="space-y-4">
                                 <div className="flex items-center justify-between mb-2">
                                     <h2 className="text-xl font-semibold">Active Links</h2>
-                                    <span className="text-sm text-zinc-500">{links.length} results</span>
+                                    <div className="flex items-center gap-4 text-sm text-zinc-500">
+                                        <button
+                                            onClick={() => {
+                                                if (sort === 'clicks') {
+                                                    setOrder(order === 'asc' ? 'desc' : 'asc');
+                                                } else {
+                                                    setSort('clicks');
+                                                    setOrder('desc');
+                                                }
+                                            }}
+                                            className={`flex items-center gap-1 hover:text-zinc-300 transition-colors ${sort === 'clicks' ? 'text-white font-medium' : ''}`}
+                                        >
+                                            Clicks
+                                            {sort === 'clicks' && (order === 'desc' ? '↓' : '↑')}
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                if (sort === 'created_at') {
+                                                    setOrder(order === 'asc' ? 'desc' : 'asc');
+                                                } else {
+                                                    setSort('created_at');
+                                                    setOrder('desc');
+                                                }
+                                            }}
+                                            className={`flex items-center gap-1 hover:text-zinc-300 transition-colors ${sort === 'created_at' ? 'text-white font-medium' : ''}`}
+                                        >
+                                            Date
+                                            {sort === 'created_at' && (order === 'desc' ? '↓' : '↑')}
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {links.length === 0 ? (

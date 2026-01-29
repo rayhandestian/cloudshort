@@ -85,7 +85,14 @@ app.get('/auth/check', async (c) => {
 });
 
 app.get('/links', async (c) => {
-    const { results } = await c.env.DB.prepare('SELECT * FROM links ORDER BY created_at DESC').all();
+    const sort = c.req.query('sort') || 'created_at'; // 'created_at' | 'clicks'
+    const order = c.req.query('order') || 'desc';     // 'asc' | 'desc'
+
+    // Prevent SQL injection by allowing only specific values
+    const safeSort = ['clicks', 'created_at'].includes(sort) ? sort : 'created_at';
+    const safeOrder = ['asc', 'desc'].includes(order) ? order : 'desc';
+
+    const { results } = await c.env.DB.prepare(`SELECT * FROM links ORDER BY ${safeSort} ${safeOrder}`).all();
     return c.json(results);
 });
 
