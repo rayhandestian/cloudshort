@@ -136,4 +136,32 @@ app.delete('/links/:id', async (c) => {
     }
 });
 
+// Settings Endpoints
+app.get('/settings', async (c) => {
+    try {
+        const rootUrl = await c.env.LINKS_KV.get('_config:root_url');
+        const notFoundUrl = await c.env.LINKS_KV.get('_config:404_url');
+        return c.json({ root_url: rootUrl || '', not_found_url: notFoundUrl || '' });
+    } catch (e: any) {
+        return c.json({ error: 'Failed to fetch settings', details: e.message }, 500);
+    }
+});
+
+app.post('/settings', async (c) => {
+    try {
+        const { root_url, not_found_url } = await c.req.json();
+
+        if (typeof root_url === 'string') {
+            await c.env.LINKS_KV.put('_config:root_url', root_url);
+        }
+        if (typeof not_found_url === 'string') {
+            await c.env.LINKS_KV.put('_config:404_url', not_found_url);
+        }
+
+        return c.json({ success: true });
+    } catch (e: any) {
+        return c.json({ error: 'Failed to update settings', details: e.message }, 500);
+    }
+});
+
 export const onRequest = handle(app);
