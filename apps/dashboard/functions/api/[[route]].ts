@@ -127,6 +127,59 @@ app.post('/links', async (c) => {
     }
 });
 
+app.get('/analytics/:slug', async (c) => {
+    const slug = c.req.param('slug');
+
+    // 1. Validate slug exists
+    const longUrl = await c.env.LINKS_KV.get(slug);
+    if (!longUrl) {
+        return c.json({ error: 'Link not found' }, 404);
+    }
+
+    // 2. Aggregate Data
+    // Clicks over time (last 24 hours for granularity, or just all time)
+    // For simplicity, let's get the last 7 days grouped by day.
+    const clicksOverTimeInit = await c.env.DB.prepare(`
+        SELECT 
+            strftime('%Y-%m-%d', datetime(timestamp / 1000, 'unixepoch')) as date,
+            COUNT(*) as count
+        FROM click_events
+        WHERE slug = ?
+        GROUP BY date
+        ORDER BY date ASC
+    `).bind(slug).all();
+
+    // Country Breakdown
+    const countryBreakdownInit = await c.env.DB.prepare(`
+        SELECT country, COUNT(*) as count
+        FROM click_events
+        WHERE slug = ?
+        GROUP BY country
+        ORDER BY count DESC
+        LIMIT 10
+    `).bind(slug).all();
+
+    // Referrer Breakdown
+    const referrerBreakdownInit = await c.env.DB.prepare(`
+        SELECT referrer, COUNT(*) as count
+        FROM click_events
+        WHERE slug = ?
+        GROUP BY referrer
+        ORDER BY count DESC
+        LIMIT 10
+    `).bind(slug).all();
+
+    return c.json({
+        slug,
+        long_url: longUrl,
+        stats: {
+            clicks_over_time: clicksOverTimeInit.results,
+            country_breakdown: countryBreakdownInit.results,
+            referrer_breakdown: referrerBreakdownInit.results,
+        }
+    });
+});
+
 app.delete('/links/:id', async (c) => {
     try {
         const id = c.req.param('id');
