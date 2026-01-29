@@ -21,6 +21,7 @@ function App() {
     const [newUrl, setNewUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [copying, setCopying] = useState<string | null>(null);
+    const [shortDomain, setShortDomain] = useState<string>('');
 
     useEffect(() => {
         checkAuth();
@@ -39,13 +40,27 @@ function App() {
             const data = await res.json();
             if (data.authenticated) {
                 setIsAuthenticated(true);
+                setIsAuthenticated(true);
                 fetchLinks(); // Initial fetch
+                fetchSettings();
             } else {
                 console.log('Auth check failed:', data);
                 setIsAuthenticated(false);
             }
         } catch {
             setIsAuthenticated(false);
+        }
+    };
+
+    const fetchSettings = async () => {
+        try {
+            const res = await fetch('/api/settings', { credentials: 'include' });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.short_domain) setShortDomain(data.short_domain);
+            }
+        } catch (err) {
+            console.error('Failed to fetch settings', err);
         }
     };
 
@@ -284,7 +299,10 @@ function App() {
                                                         <h3 className="text-lg font-bold text-white tracking-tight flex items-center gap-2">
                                                             /{link.slug}
                                                             <button
-                                                                onClick={() => copyToClipboard(`${window.location.protocol}//${window.location.host}/${link.slug}`, link.slug)}
+                                                                onClick={() => {
+                                                                    const domain = shortDomain || `${window.location.protocol}//${window.location.host}`;
+                                                                    copyToClipboard(`${domain}/${link.slug}`, link.slug);
+                                                                }}
                                                                 className="text-zinc-600 hover:text-white transition-colors"
                                                                 title="Copy Link"
                                                             >

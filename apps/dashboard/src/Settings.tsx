@@ -4,6 +4,7 @@ import { Loader2, Save } from 'lucide-react';
 export function Settings() {
     const [rootUrl, setRootUrl] = useState('');
     const [notFoundUrl, setNotFoundUrl] = useState('');
+    const [shortDomain, setShortDomain] = useState('');
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
 
@@ -18,6 +19,7 @@ export function Settings() {
                 const data = await res.json();
                 setRootUrl(data.root_url);
                 setNotFoundUrl(data.not_found_url);
+                setShortDomain(data.short_domain);
             }
         } catch (err) {
             console.error('Failed to fetch settings:', err);
@@ -33,7 +35,7 @@ export function Settings() {
             const res = await fetch('/api/settings', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ root_url: rootUrl, not_found_url: notFoundUrl }),
+                body: JSON.stringify({ root_url: rootUrl, not_found_url: notFoundUrl, short_domain: shortDomain }),
                 credentials: 'include'
             });
 
@@ -67,6 +69,18 @@ export function Settings() {
                             className="w-full bg-black border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-zinc-700 focus:outline-none focus:border-white/30 transition-colors"
                             value={rootUrl}
                             onChange={e => setRootUrl(e.target.value)}
+                        />
+                    </div>
+
+                    <div>
+                        <label className="block text-sm font-medium text-zinc-400 mb-2">Short Link Domain</label>
+                        <p className="text-xs text-zinc-500 mb-2">The public domain used for short links (e.g., https://short.example.com). If not set, the dashboard will use its own domain.</p>
+                        <input
+                            type="url"
+                            placeholder="https://short.example.com"
+                            className="w-full bg-black border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-zinc-700 focus:outline-none focus:border-white/30 transition-colors"
+                            value={shortDomain}
+                            onChange={e => setShortDomain(e.target.value)}
                         />
                     </div>
 
