@@ -104,6 +104,11 @@ app.post('/links', async (c) => {
 
         return c.json({ success: true }, 201);
     } catch (e: any) {
+        // Handle duplicate slug error
+        if (e.message.includes('SQLITE_CONSTRAINT')) {
+            return c.json({ error: 'Slug already taken', details: { slug } }, 409);
+        }
+
         return c.json({
             error: 'Failed to create link',
             details: {

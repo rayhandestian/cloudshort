@@ -55,6 +55,13 @@ function App() {
 
     const createLink = async (e: React.FormEvent) => {
         e.preventDefault();
+
+        // Basic validation: Alphanumeric slugs only (plus hyphens/underscores)
+        if (!/^[a-zA-Z0-9-_]+$/.test(newSlug)) {
+            alert('Invalid slug: Use only letters, numbers, hyphens, and underscores.');
+            return;
+        }
+
         setLoading(true);
         try {
             const res = await fetch('/api/links', {
@@ -67,6 +74,8 @@ function App() {
                 setNewSlug('');
                 setNewUrl('');
                 fetchLinks();
+            } else if (res.status === 409) {
+                alert('Error: This slug is already taken. Please choose another one.');
             } else {
                 const err = await res.text();
                 console.error('Create link error:', res.status, err);
