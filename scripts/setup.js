@@ -128,7 +128,8 @@ function initDb() {
     console.log('🏗️  Initializing Database Schema...');
     try {
         // Using IF NOT EXISTS to be safe for re-runs
-        const schema = `
+        // Analytics Schema
+        const simpleSchema = `
             CREATE TABLE IF NOT EXISTS links (
                 id INTEGER PRIMARY KEY AUTOINCREMENT, 
                 slug TEXT UNIQUE NOT NULL, 
@@ -139,9 +140,23 @@ function initDb() {
                 is_active BOOLEAN DEFAULT 1
             ); 
             CREATE INDEX IF NOT EXISTS idx_created_at ON links(created_at DESC);
-        `.replace(/\n/g, ' '); // simple minify
+        `.replace(/\n/g, ' ');
 
-        execSync(`npx wrangler d1 execute ${DB_NAME} --config apps/redirector/wrangler.toml --command "${schema}"`, { stdio: 'inherit' });
+        const analyticsSchema = `
+            CREATE TABLE IF NOT EXISTS click_events (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                slug TEXT NOT NULL,
+                timestamp INTEGER NOT NULL,
+                country TEXT,
+                referrer TEXT,
+                user_agent TEXT
+            );
+            CREATE INDEX IF NOT EXISTS idx_click_events_slug ON click_events(slug);
+            CREATE INDEX IF NOT EXISTS idx_click_events_timestamp ON click_events(timestamp);
+        `.replace(/\n/g, ' ');
+
+        execSync(`npx wrangler d1 execute ${DB_NAME} --config apps/redirector/wrangler.toml --command "${simpleSchema}"`, { stdio: 'inherit' });
+        execSync(`npx wrangler d1 execute ${DB_NAME} --config apps/redirector/wrangler.toml --command "${analyticsSchema}"`, { stdio: 'inherit' });
         console.log('✅ Database initialized.');
     } catch (e) {
         console.warn('⚠️  Warning: Database initialization encountered an issue (check output above).');

@@ -11,6 +11,7 @@ Cloudshort deploys to the Cloudflare network using `wrangler`.
 Run the following command to apply the database schema (create tables):
 ```bash
 npx wrangler d1 execute cloudshort-db --remote --file=./schema.sql --config apps/dashboard/wrangler.toml
+npx wrangler d1 execute cloudshort-db --remote --file=./schema_analytics.sql --config apps/dashboard/wrangler.toml
 ```
 
 ### 4. Configure Secrets (First Time Only)
