@@ -36,8 +36,10 @@ pnpm install
 Please refer to the [Deployment Guide](docs/DEPLOYMENT_GUIDE.md) and [Development Guide](docs/DEVELOPMENT.md) for detailed setup instructions.
 
 **Quick Start:**
-1.  Run `pnpm run project:setup` to configure resources.
-2.  Run `pnpm run project:deploy` to publish to Cloudflare.
+```bash
+pnpm run project:setup   # Creates D1/KV, configures wrangler.toml, initializes DB
+pnpm run project:deploy  # Deploys Redirector (Worker) and Dashboard (Pages)
+```
 
 ## 📄 License
 
