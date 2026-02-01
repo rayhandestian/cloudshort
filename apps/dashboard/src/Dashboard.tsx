@@ -106,9 +106,9 @@ export function Dashboard({ shortDomain }: { shortDomain: string }) {
                 </div>
             </div>
 
-            <div className="grid lg:grid-cols-[350px,1fr] gap-8 items-start">
+            <div className="grid grid-cols-1 lg:grid-cols-[350px,1fr] gap-8 items-start">
                 {/* Create Form */}
-                <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 sticky top-24">
+                <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 lg:sticky lg:top-24">
                     <h2 className="text-xl font-semibold mb-6 flex items-center gap-2">
                         <Plus className="text-zinc-500" size={20} /> New Link
                     </h2>
@@ -213,9 +213,9 @@ export function Dashboard({ shortDomain }: { shortDomain: string }) {
                                                 {link.clicks || 0} clicks
                                             </span>
                                         </div>
-                                        <div className="flex items-center gap-2 text-zinc-500 text-sm truncate">
+                                        <div className="flex items-center gap-2 text-zinc-500 text-sm">
                                             <ArrowRight size={14} />
-                                            <a href={link.long_url} target="_blank" rel="noreferrer" className="hover:text-zinc-300 truncate transition-colors">
+                                            <a href={link.long_url} target="_blank" rel="noreferrer" className="hover:text-zinc-300 break-all transition-colors min-w-0">
                                                 {link.long_url}
                                             </a>
                                         </div>
