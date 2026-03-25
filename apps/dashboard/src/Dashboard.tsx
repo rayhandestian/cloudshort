@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, Trash2, Link as LinkIcon, Loader2, Copy, Check, ArrowRight, BarChart3 } from 'lucide-react';
+import { Plus, Trash2, Link as LinkIcon, Loader2, Copy, Check, ArrowRight, BarChart3, Edit2 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 type LinkItem = {
@@ -18,6 +18,9 @@ export function Dashboard({ shortDomain }: { shortDomain: string }) {
     const [newUrl, setNewUrl] = useState('');
     const [loading, setLoading] = useState(false);
     const [copying, setCopying] = useState<string | null>(null);
+    const [editingLink, setEditingLink] = useState<LinkItem | null>(null);
+    const [editUrl, setEditUrl] = useState('');
+    const [updating, setUpdating] = useState(false);
 
     useEffect(() => {
         fetchLinks();
@@ -77,6 +80,33 @@ export function Dashboard({ shortDomain }: { shortDomain: string }) {
             fetchLinks();
         } catch (err) {
             console.error('Failed to delete', err);
+        }
+    };
+
+    const updateLink = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!editingLink) return;
+
+        setUpdating(true);
+        try {
+            const res = await fetch(`/api/links/${editingLink.slug}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ long_url: editUrl }),
+                credentials: 'include'
+            });
+            if (res.ok) {
+                setEditingLink(null);
+                setEditUrl('');
+                fetchLinks();
+            } else {
+                const err = await res.text();
+                alert('Failed to update link: ' + err);
+            }
+        } catch (err) {
+            alert('Error updating link');
+        } finally {
+            setUpdating(false);
         }
     };
 
@@ -230,6 +260,16 @@ export function Dashboard({ shortDomain }: { shortDomain: string }) {
                                             <BarChart3 size={18} />
                                         </Link>
                                         <button
+                                            onClick={() => {
+                                                setEditingLink(link);
+                                                setEditUrl(link.long_url);
+                                            }}
+                                            className="p-2 text-zinc-500 hover:text-blue-400 hover:bg-blue-400/10 rounded-lg transition-colors"
+                                            title="Edit Destination"
+                                        >
+                                            <Edit2 size={18} />
+                                        </button>
+                                        <button
                                             onClick={() => deleteLink(link.id)}
                                             className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg transition-colors"
                                             title="Delete"
@@ -247,6 +287,54 @@ export function Dashboard({ shortDomain }: { shortDomain: string }) {
                     )}
                 </div>
             </div>
+
+            {/* Edit Modal */}
+            {editingLink && (
+                <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
+                    <div className="bg-zinc-900 border border-white/10 rounded-2xl p-6 w-full max-w-md">
+                        <h2 className="text-xl font-semibold mb-4 text-white">Edit Destination</h2>
+                        <form onSubmit={updateLink} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">Short Slug (Read-only)</label>
+                                <input
+                                    type="text"
+                                    className="w-full bg-black/50 border border-white/5 rounded-lg px-4 py-2.5 text-zinc-500 cursor-not-allowed"
+                                    value={editingLink.slug}
+                                    readOnly
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-xs font-medium text-zinc-500 uppercase tracking-wider mb-2">New Destination URL</label>
+                                <input
+                                    type="url"
+                                    placeholder="https://..."
+                                    className="w-full bg-black border border-white/10 rounded-lg px-4 py-2.5 text-white placeholder-zinc-700 focus:outline-none focus:border-white/30 transition-colors"
+                                    value={editUrl}
+                                    onChange={e => setEditUrl(e.target.value)}
+                                    required
+                                    autoFocus
+                                />
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    type="button"
+                                    onClick={() => setEditingLink(null)}
+                                    className="flex-1 bg-zinc-800 text-white font-medium rounded-lg px-4 py-2.5 hover:bg-zinc-700 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    type="submit"
+                                    disabled={updating}
+                                    className="flex-1 bg-white text-black font-bold rounded-lg px-4 py-2.5 hover:bg-zinc-200 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                                >
+                                    {updating ? <Loader2 className="animate-spin" size={18} /> : 'Save Changes'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

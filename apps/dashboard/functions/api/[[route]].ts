@@ -180,6 +180,31 @@ app.get('/analytics/:slug', async (c) => {
     });
 });
 
+app.patch('/links/:slug', async (c) => {
+    try {
+        const slug = c.req.param('slug');
+        const { long_url } = await c.req.json();
+
+        if (!long_url) return c.json({ error: 'Missing long_url' }, 400);
+
+        // Verify link exists
+        const existing = await c.env.DB.prepare('SELECT id FROM links WHERE slug = ?').bind(slug).first();
+        if (!existing) return c.json({ error: 'Link not found' }, 404);
+
+        // Update DB
+        await c.env.DB.prepare('UPDATE links SET long_url = ? WHERE slug = ?')
+            .bind(long_url, slug)
+            .run();
+
+        // Update KV Cache
+        await c.env.LINKS_KV.put(slug, long_url);
+
+        return c.json({ success: true });
+    } catch (e: any) {
+        return c.json({ error: 'Failed to update link', details: e.message }, 500);
+    }
+});
+
 app.delete('/links/:id', async (c) => {
     try {
         const id = c.req.param('id');
